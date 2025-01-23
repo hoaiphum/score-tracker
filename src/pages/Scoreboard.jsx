@@ -5,6 +5,7 @@ import PlayerEditModal from './PlayerEditModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList, faPenToSquare, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons/faTrashCan';
+import ScoreInputModal from '../components/ScoreInputModal';
 
 const Scoreboard = () => {
     const [players, setPlayers] = useState([]);
@@ -15,21 +16,26 @@ const Scoreboard = () => {
     const [showPlayerEdit, setShowPlayerEdit] = useState(false);
     const navigate = useNavigate();
 
+    const [showScoreInputModal, setShowScoreInputModal] = useState(false);
+
     useEffect(() => {
         const storedPlayers = JSON.parse(localStorage.getItem('players')) || [];
         const storedHost = localStorage.getItem('host') || '';
         const storedScores = JSON.parse(localStorage.getItem('scores')) || {};
-        const storedRound = parseInt(localStorage.getItem('round'), 10) || 0;
+        const history = JSON.parse(localStorage.getItem('history')) || [];
+
+        setRound(history.length)
 
         setPlayers(storedPlayers);
         setHost(storedHost);
 
+        // Initialize scores
         const initialScores = {};
         storedPlayers.forEach((player) => {
             initialScores[player] = storedScores[player] || 0;
         });
+
         setScores(initialScores);
-        setRound(storedRound);
 
         if (!localStorage.getItem('history')) {
             localStorage.setItem('history', JSON.stringify([]));
@@ -38,29 +44,29 @@ const Scoreboard = () => {
 
     const addRoundScores = (newScores) => {
         const updatedScores = { ...scores };
-        let total = 0;
+        const history = JSON.parse(localStorage.getItem('history')) || [];
+        let roundTotal = 0;
 
+        // Update scores for all players
         players.forEach((player) => {
             if (player !== host) {
                 updatedScores[player] += newScores[player] || 0;
-                total += newScores[player] || 0;
+                roundTotal += newScores[player] || 0;
             }
         });
-        updatedScores[host] = -total;
+
+        // Calculate the host's score as the negative of the total for others
+        updatedScores[host] = players
+            .filter((player) => player !== host)
+            .reduce((total, player) => total - updatedScores[player], 0);
+
+        // Update state and localStorage
         setScores(updatedScores);
         setRound(round + 1);
 
-        // Save history as a single entry for the round
-        const history = JSON.parse(localStorage.getItem('history')) || [];
-        const newRoundHistory = {
-            round: round + 1,
-            scores: { ...newScores, [host]: -total },
-        };
+        // Save round to history
+        const newRoundHistory = { round: round + 1, scores: { ...newScores, [host]: -roundTotal }, modified: false };
         localStorage.setItem('history', JSON.stringify([...history, newRoundHistory]));
-
-        // Save scores and round to localStorage
-        localStorage.setItem('scores', JSON.stringify(updatedScores));
-        localStorage.setItem('round', round + 1);
     };
 
     const resetGame = () => {
@@ -79,6 +85,15 @@ const Scoreboard = () => {
             updatedScores[player] = scores[player] || 0;
         });
         setScores(updatedScores);
+    };
+
+    const openScoreInputModal = () => {
+        setShowScoreInputModal(true);
+    };
+
+    const handleScoreSubmit = (newScores) => {
+        addRoundScores(newScores);
+        setShowScoreInputModal(false);
     };
 
     return (
@@ -107,21 +122,21 @@ const Scoreboard = () => {
                     </tbody>
                 </table>
                 <button
-                    className="bg-yellow-300 w-[300px] h-[40px] rounded-full flex justify-center items-center gap-2"
-                    onClick={() => addRoundScores(promptForScores(players, host))}
+                    className="bg-blue-400 hover:shadow-md w-[300px] h-[40px] rounded-full flex justify-center items-center gap-2"
+                    onClick={() => openScoreInputModal()}
                 >
                     <FontAwesomeIcon className="text-white text-xl" icon={faPlus} />
                     <span className="font-semibold text-sm text-white">Add Round Scores</span>
                 </button>
                 <button
-                    className="bg-yellow-300 w-[300px] h-[40px] rounded-full flex justify-center items-center gap-2"
+                    className="bg-green-400 hover:shadow-md w-[300px] h-[40px] rounded-full flex justify-center items-center gap-2"
                     onClick={() => setShowHistory(true)}
                 >
                     <FontAwesomeIcon className="text-white text-xl" icon={faList} />
                     <span className="font-semibold text-sm text-white">View History</span>
                 </button>
                 <button
-                    className="bg-yellow-300 w-[300px] h-[40px] rounded-full flex justify-center items-center gap-2"
+                    className="bg-yellow-400 hover:shadow-md w-[300px] h-[40px] rounded-full flex justify-center items-center gap-2"
                     onClick={() => {
                         setShowPlayerEdit(true);
                         updatePlayers();
@@ -132,14 +147,16 @@ const Scoreboard = () => {
                 </button>
                 <button
                     onClick={resetGame}
-                    className="bg-yellow-300 w-[300px] h-[40px] rounded-full flex justify-center items-center gap-2"
+                    className="bg-red-400 hover:shadow-md w-[300px] h-[40px] rounded-full flex justify-center items-center gap-2"
                 >
                     <FontAwesomeIcon className="text-white text-xl" icon={faTrashCan} />
                     <span className="font-semibold text-sm text-white">Reset Game</span>
                 </button>
             </div>
 
-            {showHistory && <HistoryModal onClose={() => setShowHistory(false)} />}
+            {showHistory && (
+                <HistoryModal onClose={() => setShowHistory(false)} onUpdateScores={setScores} host={host} />
+            )}
             {showPlayerEdit && (
                 <PlayerEditModal
                     onClose={() => {
@@ -148,29 +165,16 @@ const Scoreboard = () => {
                     }}
                 />
             )}
+            {showScoreInputModal && (
+                <ScoreInputModal
+                    players={players}
+                    host={host}
+                    onSubmit={handleScoreSubmit}
+                    onCancel={() => setShowScoreInputModal(false)}
+                />
+            )}
         </div>
     );
-};
-
-const promptForScores = (players, host) => {
-    const newScores = {};
-    players.forEach((player) => {
-        if (player !== host) {
-            let score;
-            do {
-                const input = prompt(`Enter an integer score for ${player}:`);
-                score = parseInt(input, 10);
-
-                if (isNaN(score)) {
-                    alert('Invalid input. Please enter an integer.');
-                } else {
-                    break;
-                }
-            } while (true);
-            newScores[player] = score;
-        }
-    });
-    return newScores;
 };
 
 export default Scoreboard;
