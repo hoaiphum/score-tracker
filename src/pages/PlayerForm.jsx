@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const PlayerForm = () => {
@@ -6,6 +6,14 @@ const PlayerForm = () => {
     const [host, setHost] = useState('');
     const [newPlayer, setNewPlayer] = useState('');
     const navigate = useNavigate();
+
+    // Redirect to scoreboard if players exist in localStorage
+    useEffect(() => {
+        const storedPlayers = JSON.parse(localStorage.getItem('players')) || [];
+        if (storedPlayers.length > 0) {
+            navigate('/scoreboard');
+        }
+    }, [navigate]);
 
     const addPlayer = () => {
         if (newPlayer && !players.includes(newPlayer)) {
