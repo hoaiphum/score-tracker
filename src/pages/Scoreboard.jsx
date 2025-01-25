@@ -24,7 +24,7 @@ const Scoreboard = () => {
         const storedScores = JSON.parse(localStorage.getItem('scores')) || {};
         const history = JSON.parse(localStorage.getItem('history')) || [];
 
-        setRound(history.length)
+        setRound(history.length);
 
         setPlayers(storedPlayers);
         setHost(storedHost);
@@ -42,12 +42,17 @@ const Scoreboard = () => {
         }
     }, []);
 
+    useEffect(() => {
+        // Save scores to localStorage whenever they change
+        localStorage.setItem('scores', JSON.stringify(scores));
+    }, [scores]);
+
     const addRoundScores = (newScores) => {
         const updatedScores = { ...scores };
         const history = JSON.parse(localStorage.getItem('history')) || [];
         let roundTotal = 0;
 
-        // Update scores for all players
+        // Update scores for all players except the host
         players.forEach((player) => {
             if (player !== host) {
                 updatedScores[player] += newScores[player] || 0;
@@ -60,7 +65,7 @@ const Scoreboard = () => {
             .filter((player) => player !== host)
             .reduce((total, player) => total - updatedScores[player], 0);
 
-        // Update state and localStorage
+        // Update state and save to history
         setScores(updatedScores);
         setRound(round + 1);
 
