@@ -91,9 +91,9 @@ const HistoryModal = ({ onClose, onUpdateScores, host }) => {
                         <FontAwesomeIcon className="text-xl" icon={faClose} />
                     </button>
                 </div>
-                <div className="w-full overflow-x-auto">
+                <div className="w-full overflow-y-auto max-h-[400px]">
                     <table className="w-full border-collapse">
-                        <thead className="text-left bg-blue-400">
+                        <thead className="text-left bg-blue-400 sticky top-0 z-10">
                             <tr>
                                 <th className="text-sm text-white font-semibold py-1 px-2">Round</th>
                                 {JSON.parse(localStorage.getItem('players')).map((player) => (

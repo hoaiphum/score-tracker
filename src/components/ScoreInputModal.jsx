@@ -3,15 +3,23 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react';
 
 const ScoreInputModal = ({ players, host, onSubmit, onCancel }) => {
+    const betValue = localStorage.getItem('bet') || '';
     const [scores, setScores] = useState(() =>
         players.reduce((acc, player) => {
-            if (player !== host) acc[player] = ''; // Giá trị ban đầu dạng chuỗi
+            if (player !== host) acc[player] = betValue; // Giá trị ban đầu dạng chuỗi
             return acc;
         }, {}),
     );
 
     const handleInputChange = (player, value) => {
         setScores({ ...scores, [player]: value });
+    };
+    const handleZero = (player, value) => {
+        if (parseInt(scores[player], 10) === 0) {
+            setScores({ ...scores, [player]: betValue });
+        } else {
+            setScores({ ...scores, [player]: '0' });
+        }
     };
 
     const handleMinusClick = (player) => {
@@ -21,6 +29,9 @@ const ScoreInputModal = ({ players, host, onSubmit, onCancel }) => {
                 // Nếu đã có dấu '-', xóa nó
                 return { ...prevScores, [player]: currentScore.slice(1) };
             } else {
+                if (currentScore === '0') {
+                    return { ...prevScores, [player]: `-${betValue}` };
+                }
                 // Nếu chưa có dấu '-', thêm vào
                 return { ...prevScores, [player]: `-${currentScore}` };
             }
@@ -36,7 +47,7 @@ const ScoreInputModal = ({ players, host, onSubmit, onCancel }) => {
 
     return (
         <div className="fixed top-0 left-0 w-full h-full bg-black-rgba flex items-center justify-center">
-            <div className="shadow-md bg-white rounded-lg p-3 pb-5 w-[90%] lg:w-[30%] md:w-[40%] flex flex-col items-center gap-3">
+            <div className="shadow-md bg-white rounded-lg p-3 pb-5 lg:w-[30%] flex flex-col items-center gap-3">
                 <h2 className="text-center font-semibold text-xl">Enter Scores</h2>
                 <div className="w-full flex flex-col justify-between flex-1 px-4 gap-4">
                     <form className="w-full flex flex-col gap-4">
@@ -55,8 +66,12 @@ const ScoreInputModal = ({ players, host, onSubmit, onCancel }) => {
                                             <FontAwesomeIcon className="text-sm text-center" icon={faMinus} />
                                         </button>
                                         <input
-                                            className={`flex-1 ring-[1.5px] rounded-md outline-none p-1 text-sm ${
-                                                parseInt(scores[player], 10) < 0 ? 'ring-red-400' : 'ring-green-400'
+                                            className={`flex-1 ring-[1.5px] w-[120px] rounded-md outline-none p-1 text-sm ${
+                                                parseInt(scores[player], 10) < 0
+                                                    ? 'ring-red-400'
+                                                    : parseInt(scores[player], 10) > 0
+                                                    ? 'ring-green-400'
+                                                    : 'ring-gray-300'
                                             }`}
                                             type="text"
                                             inputMode="numeric"
@@ -64,6 +79,13 @@ const ScoreInputModal = ({ players, host, onSubmit, onCancel }) => {
                                             onChange={(e) => handleInputChange(player, e.target.value)}
                                             placeholder="Enter score"
                                         />
+                                        <button
+                                            className={`w-[20px] h-[20px] rounded-full ml-2 flex items-center justify-center bg-blue-500`}
+                                            type="button"
+                                            onClick={() => handleZero(player, '0')}
+                                        >
+                                            <span className="text-sm text-center text-white">0</span>
+                                        </button>
                                     </div>
                                 ),
                         )}

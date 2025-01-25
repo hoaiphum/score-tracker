@@ -15,6 +15,7 @@ const Scoreboard = () => {
     const [showHistory, setShowHistory] = useState(false);
     const [showPlayerEdit, setShowPlayerEdit] = useState(false);
     const navigate = useNavigate();
+    const [bet, setBet] = useState('');
 
     const [showScoreInputModal, setShowScoreInputModal] = useState(false);
 
@@ -23,7 +24,9 @@ const Scoreboard = () => {
         const storedHost = localStorage.getItem('host') || '';
         const storedScores = JSON.parse(localStorage.getItem('scores')) || {};
         const history = JSON.parse(localStorage.getItem('history')) || [];
+        const betValue = localStorage.getItem('bet') || '';
 
+        setBet(betValue);
         setRound(history.length);
 
         setPlayers(storedPlayers);
@@ -101,11 +104,29 @@ const Scoreboard = () => {
         setShowScoreInputModal(false);
     };
 
+    const handleBet = (betValue) => {
+        const betVal = parseInt(betValue, 10) || '';
+        if (betVal !== 'NaN') {
+            setBet(betVal);
+            localStorage.setItem('bet', betVal);
+        }
+    };
+
     return (
         <div className="h-screen flex flex-col items-center justify-center overflow-auto">
             <div className="flex flex-col items-center bg-white p-2 pt-0 gap-4 w-full h-full">
                 <div className="w-screen bg-blue-600 h-[60px] flex items-center justify-center">
                     <h1 className="text-center font-semibold text-white text-xl">Scoreboard</h1>
+                </div>
+                <div className="flex gap-2">
+                    <span>Bet (k)</span>
+                    <input
+                        className="border-b-2 border-gray-300 outline-none w-[40px] text-center"
+                        type="text"
+                        inputMode="numeric"
+                        value={bet}
+                        onChange={(e) => handleBet(e.target.value)}
+                    />
                 </div>
                 <table className="w-full max-w-[600px] border-collapse">
                     <thead className="text-left bg-blue-400">
