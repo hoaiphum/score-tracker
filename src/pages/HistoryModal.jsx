@@ -3,7 +3,6 @@ import { faClose, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons/faTrashCan';
 
-
 const HistoryModal = ({ onClose, onUpdateScores, host }) => {
     const history = JSON.parse(localStorage.getItem('history')) || [];
     const [localHistory, setLocalHistory] = useState(history);
@@ -12,42 +11,44 @@ const HistoryModal = ({ onClose, onUpdateScores, host }) => {
         const updatedScores = { ...localHistory[roundIndex].scores };
         const players = JSON.parse(localStorage.getItem('players'));
         const host = localStorage.getItem('host');
-      
+
         let total = 0;
-      
+
         players.forEach((player) => {
-          if (player !== host) {
-            const newScore = parseInt(prompt(`Enter new score for ${player} (Round ${localHistory[roundIndex].round}):`), 10);
-            if (!isNaN(newScore)) {
-              updatedScores[player] = newScore;
-              total += newScore;
+            if (player !== host) {
+                const newScore = parseInt(
+                    prompt(`Enter new score for ${player} (Round ${localHistory[roundIndex].round}):`),
+                    10,
+                );
+                if (!isNaN(newScore)) {
+                    updatedScores[player] = newScore;
+                    total += newScore;
+                }
             }
-          }
         });
-      
+
         // Update host score dynamically
         updatedScores[host] = -total;
-      
+
         const updatedHistory = [...localHistory];
         updatedHistory[roundIndex] = {
-          ...updatedHistory[roundIndex],
-          scores: updatedScores,
-          modified: true,
+            ...updatedHistory[roundIndex],
+            scores: updatedScores,
+            modified: true,
         };
-      
+
         setLocalHistory(updatedHistory);
         localStorage.setItem('history', JSON.stringify(updatedHistory));
         recalculateScores(updatedHistory);
-      };
-      
+    };
 
     const deleteRound = (roundIndex) => {
         if (window.confirm(`Are you sure you want to delete round ${roundIndex + 1}?`)) {
-        const updatedHistory = [...localHistory];
-        updatedHistory[roundIndex].deleted = true;
-        setLocalHistory(updatedHistory);
-        localStorage.setItem('history', JSON.stringify(updatedHistory));
-        recalculateScores(updatedHistory);
+            const updatedHistory = [...localHistory];
+            updatedHistory[roundIndex].deleted = true;
+            setLocalHistory(updatedHistory);
+            localStorage.setItem('history', JSON.stringify(updatedHistory));
+            recalculateScores(updatedHistory);
         }
     };
 
@@ -90,39 +91,61 @@ const HistoryModal = ({ onClose, onUpdateScores, host }) => {
                         <FontAwesomeIcon className="text-xl" icon={faClose} />
                     </button>
                 </div>
-                <table className="w-full max-w-[600px] border-collapse overscroll-auto">
-                    <thead className="text-left bg-blue-400">
-                        <tr>
-                            <th className="text-sm text-white font-semibold py-1 px-2">Round</th>
-                            {JSON.parse(localStorage.getItem('players')).map((player) => (
-                                <th className="text-sm text-white font-semibold py-1 px-2" key={player}>{player}</th>
-                            ))}
-                            <th className="text-sm text-white font-semibold py-1 px-2 text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {localHistory.map((round, roundIndex) => (
-                            <tr className={`even:bg-gray-100 last-of-type:border-b-2 last-of-type:border-blue-600 ${round.deleted && 'text-gray-400'}`} key={roundIndex} style={{ textDecoration: round.deleted ? 'line-through' : 'none' }}>
-                                <td className="py-1 px-2">{round.round}{round.modified && '*'}</td>
+                <div className="w-full overflow-x-auto">
+                    <table className="w-full border-collapse">
+                        <thead className="text-left bg-blue-400">
+                            <tr>
+                                <th className="text-sm text-white font-semibold py-1 px-2">Round</th>
                                 {JSON.parse(localStorage.getItem('players')).map((player) => (
-                                    <td key={player}>{round.scores[player] || 0}</td>
+                                    <th className="text-sm text-white font-semibold py-1 px-2" key={player}>
+                                        {player}
+                                    </th>
                                 ))}
-                                <td className="py-1 px-2">
-                                    {!round.deleted && (
-                                        <div className='flex justify-center items-center gap-2'>
-                                            <button className='w-[25px] h-[25px] bg-yellow-400 flex items-center justify-center rounded-full hover:shadow-lg' onClick={() => editRound(roundIndex)}>
-                                                <FontAwesomeIcon className="text-white text-sm" icon={faPenToSquare} />
-                                            </button>
-                                            <button className='w-[25px] h-[25px] bg-red-400 flex items-center justify-center rounded-full hover:shadow-lg' onClick={() => deleteRound(roundIndex)}>
-                                                <FontAwesomeIcon className="text-white text-sm" icon={faTrashCan} />
-                                            </button>
-                                        </div>
-                                    )}
-                                </td>
+                                <th className="text-sm text-white font-semibold py-1 px-2 text-center">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {localHistory.map((round, roundIndex) => (
+                                <tr
+                                    className={`even:bg-gray-100 last-of-type:border-b-2 last-of-type:border-blue-600 ${
+                                        round.deleted && 'text-gray-400'
+                                    }`}
+                                    key={roundIndex}
+                                    style={{ textDecoration: round.deleted ? 'line-through' : 'none' }}
+                                >
+                                    <td className="py-1 px-2">
+                                        {round.round}
+                                        {round.modified && '*'}
+                                    </td>
+                                    {JSON.parse(localStorage.getItem('players')).map((player) => (
+                                        <td key={player}>{round.scores[player] || 0}</td>
+                                    ))}
+                                    <td className="py-1 px-2">
+                                        {!round.deleted && (
+                                            <div className="flex justify-center items-center gap-2">
+                                                <button
+                                                    className="w-[25px] h-[25px] bg-yellow-400 flex items-center justify-center rounded-full hover:shadow-lg"
+                                                    onClick={() => editRound(roundIndex)}
+                                                >
+                                                    <FontAwesomeIcon
+                                                        className="text-white text-sm"
+                                                        icon={faPenToSquare}
+                                                    />
+                                                </button>
+                                                <button
+                                                    className="w-[25px] h-[25px] bg-red-400 flex items-center justify-center rounded-full hover:shadow-lg"
+                                                    onClick={() => deleteRound(roundIndex)}
+                                                >
+                                                    <FontAwesomeIcon className="text-white text-sm" icon={faTrashCan} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
