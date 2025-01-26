@@ -1,3 +1,5 @@
+import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -50,10 +52,10 @@ const PlayerForm = () => {
                         onChange={(e) => setNewPlayer(e.target.value)}
                     />
                     <button
-                        className="flex items-center justify-center bg-blue-500 font-semibold text-white text-3xl text-center w-[40px] h-[40px] rounded-full"
+                        className="flex items-center justify-center bg-blue-500 font-semibold text-white text-2xl text-center w-[40px] h-[40px] rounded-full"
                         onClick={addPlayer}
                     >
-                        +
+                        <FontAwesomeIcon icon={faPlus} />
                     </button>
                 </div>
                 {players && players.length > 0 && (
@@ -80,7 +82,7 @@ const PlayerForm = () => {
                                 onClick={() => removePlayer(player)}
                                 className="mx-1 p-2 font-semibold text-red-500"
                             >
-                                x
+                                <FontAwesomeIcon icon={faXmark} />
                             </button>
                         </li>
                     ))}
