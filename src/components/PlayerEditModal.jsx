@@ -26,6 +26,7 @@ const PlayerEditModal = ({ onClose }) => {
         <div className="fixed top-0 left-0 w-full h-full bg-black-rgba flex items-center justify-center">
             <div className="modal-content">
                 <h2 className="font-semibold text-xl">Edit Players</h2>
+                <span className="font-semibold text-red-500">(This feature under development)</span>
                 <ul>
                     {players.map((player) => (
                         <li key={player}>

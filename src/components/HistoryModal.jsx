@@ -5,7 +5,9 @@ import { faTrashCan } from '@fortawesome/free-regular-svg-icons/faTrashCan';
 
 const HistoryModal = ({ onClose, onUpdateScores, host }) => {
     const history = JSON.parse(localStorage.getItem('history')) || [];
-    const [localHistory, setLocalHistory] = useState(history);
+    const [localHistory, setLocalHistory] = useState(
+        history.sort((a, b) => b.round - a.round), // Sắp xếp ngay khi khởi tạo
+    );
 
     const editRound = (roundIndex) => {
         const updatedScores = { ...localHistory[roundIndex].scores };
@@ -37,6 +39,9 @@ const HistoryModal = ({ onClose, onUpdateScores, host }) => {
             modified: true,
         };
 
+        // Sắp xếp lại sau khi chỉnh sửa
+        updatedHistory.sort((a, b) => b.round - a.round);
+
         setLocalHistory(updatedHistory);
         localStorage.setItem('history', JSON.stringify(updatedHistory));
         recalculateScores(updatedHistory);
@@ -46,6 +51,10 @@ const HistoryModal = ({ onClose, onUpdateScores, host }) => {
         if (window.confirm(`Are you sure you want to delete round ${roundIndex + 1}?`)) {
             const updatedHistory = [...localHistory];
             updatedHistory[roundIndex].deleted = true;
+
+            // Sắp xếp lại sau khi xóa
+            updatedHistory.sort((a, b) => b.round - a.round);
+
             setLocalHistory(updatedHistory);
             localStorage.setItem('history', JSON.stringify(updatedHistory));
             recalculateScores(updatedHistory);

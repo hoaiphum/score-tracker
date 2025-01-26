@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import HistoryModal from './HistoryModal';
-import PlayerEditModal from './PlayerEditModal';
+import HistoryModal from '../components/HistoryModal';
+import PlayerEditModal from '../components/PlayerEditModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList, faPenToSquare, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { faTrashCan } from '@fortawesome/free-regular-svg-icons/faTrashCan';
@@ -118,15 +118,18 @@ const Scoreboard = () => {
                 <div className="w-screen bg-blue-600 h-[60px] flex items-center justify-center">
                     <h1 className="text-center font-semibold text-white text-xl">Scoreboard</h1>
                 </div>
-                <div className="flex gap-2">
-                    <span>Bet (k)</span>
-                    <input
-                        className="border-b-2 border-gray-300 outline-none w-[40px] text-center"
-                        type="text"
-                        inputMode="numeric"
-                        value={bet}
-                        onChange={(e) => handleBet(e.target.value)}
-                    />
+                <div className="flex items-center justify-between w-full lg:px-4">
+                    <span className="font-semibold text-sm">Round: {round}</span>
+                    <div className="flex gap-2">
+                        <span className="font-semibold text-sm">Bet (k)</span>
+                        <input
+                            className="border-b-2 border-gray-300 outline-none w-[40px] text-center text-sm font-semibold"
+                            type="text"
+                            inputMode="numeric"
+                            value={bet}
+                            onChange={(e) => handleBet(e.target.value)}
+                        />
+                    </div>
                 </div>
                 <table className="w-full max-w-[600px] border-collapse">
                     <thead className="text-left bg-blue-400">
@@ -141,8 +144,33 @@ const Scoreboard = () => {
                                 className="even:bg-gray-100 last-of-type:border-b-2 last-of-type:border-blue-600"
                                 key={player}
                             >
-                                <td className="py-1 px-2">{player}</td>
-                                <td className="py-1 px-2">{scores[player]}</td>
+                                <td
+                                    className={`py-1 px-2 flex items-center font-semibold  ${
+                                        scores[player] < 0
+                                            ? 'text-red-400'
+                                            : scores[player] > 0
+                                            ? 'text-green-600'
+                                            : 'text-black'
+                                    }`}
+                                >
+                                    {player}{' '}
+                                    {player === host && (
+                                        <span className="ml-1 text-white w-[15px] h-[15px] flex items-center justify-center text-[10px] bg-red-500 rounded-full text-center">
+                                            H
+                                        </span>
+                                    )}
+                                </td>
+                                <td
+                                    className={`py-1 px-2 font-semibold ${
+                                        scores[player] < 0
+                                            ? 'text-red-400'
+                                            : scores[player] > 0
+                                            ? 'text-green-600'
+                                            : 'text-black'
+                                    }`}
+                                >
+                                    {scores[player]}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
